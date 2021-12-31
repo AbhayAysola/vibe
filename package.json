@@ -1,0 +1,23 @@
+{
+  "name": "vibe",
+  "version": "0.0.1",
+  "description": "Music bot for discord",
+  "main": "index.js",
+  "repository": "https://github.com/AbhayAysola/vibe",
+  "author": "AbhayAysola",
+  "license": "MIT",
+  "devDependencies": {
+    "@discordjs/rest": "^0.2.0-canary.0",
+    "@types/node": "^17.0.5",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.5.4"
+  },
+  "scripts": {
+    "start": "nodemon src/Bot.ts",
+    "deployCommands": "cd utils && ts-node deploy-commands.ts"
+  },
+  "dependencies": {
+    "@discordjs/builders": "^0.11.0",
+    "dotenv": "^10.0.0"
+  }
+}
