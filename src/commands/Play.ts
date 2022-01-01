@@ -1,6 +1,8 @@
 import { CommandInteraction, Client } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
+
 import { Command } from "../Command";
+import { checkVoiceChannel, getSongData, addSongToQueue } from "../Common";
 
 export const Play: Command = {
   data: new SlashCommandBuilder()
@@ -13,11 +15,13 @@ export const Play: Command = {
         .setRequired(true)
     ),
   run: async (client: Client, interaction: CommandInteraction) => {
-    const url = interaction.options.getString("url");
-    if (!url) {
-      await interaction.followUp("An error has occured");
-      return;
+    if (await checkVoiceChannel(interaction)) {
+      const data = await getSongData(interaction);
+      if (!data) {
+        await interaction.followUp("An error has occured.");
+        return;
+      }
+      await addSongToQueue(data, interaction);
     }
-    await interaction.followUp(url);
   },
 };

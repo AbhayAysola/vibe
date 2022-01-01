@@ -18,6 +18,10 @@
   },
   "dependencies": {
     "@discordjs/builders": "^0.11.0",
-    "dotenv": "^10.0.0"
+    "@discordjs/opus": "^0.7.0",
+    "@discordjs/voice": "^0.7.5",
+    "dotenv": "^10.0.0",
+    "play-dl": "^1.6.9",
+    "tweetnacl": "^1.0.3"
   }
 }
