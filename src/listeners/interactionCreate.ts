@@ -1,4 +1,4 @@
-import { BaseCommandInteraction, Client, Interaction } from "discord.js";
+import { CommandInteraction, Client, Interaction } from "discord.js";
 import { Commands } from "../Commands";
 
 export default (client: Client): void => {
@@ -10,7 +10,7 @@ export default (client: Client): void => {
 
 const handleSlashCommand = async (
   client: Client,
-  interaction: BaseCommandInteraction
+  interaction: CommandInteraction
 ): Promise<void> => {
   const slashCommand = Commands.find(
     (c) => c.data.name === interaction.commandName
