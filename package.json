@@ -16,7 +16,9 @@
   "scripts": {
     "dev": "nodemon src/Bot.ts | pino-pretty -i pid,hostname -t yyyy-mm-dd HH:MM:ss",
     "deployCommands": "ts-node ./src//utils/deploy-commands.ts",
-    "start": "ts-node src/Bot.ts"
+    "start": "yarn build && node dist/Bot.js",
+    "build": "tsc",
+    "postinstall": "yarn build"
   },
   "dependencies": {
     "@discordjs/builders": "^0.11.0",
