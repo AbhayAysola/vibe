@@ -15,7 +15,7 @@
   },
   "scripts": {
     "dev": "nodemon src/Bot.ts | pino-pretty -i pid,hostname -t yyyy-mm-dd HH:MM:ss",
-    "deployCommands": "ts-node ./src//utils/deploy-commands.ts",
+    "deployCommands": "ts-node ./src/utils/deploy-commands.ts",
     "start": "node dist/Bot.js",
     "build": "tsc"
   },
