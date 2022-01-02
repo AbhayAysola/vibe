@@ -13,14 +13,15 @@
     "typescript": "^4.5.4"
   },
   "scripts": {
-    "start": "nodemon src/Bot.ts",
-    "deployCommands": "ts-node ./utils/deploy-commands.ts"
+    "dev": "nodemon src/Bot.ts | pino-pretty -i pid,hostname -t yyyy-mm-dd HH:MM:ss",
+    "deployCommands": "ts-node ./src//utils/deploy-commands.ts"
   },
   "dependencies": {
     "@discordjs/builders": "^0.11.0",
     "@discordjs/opus": "^0.7.0",
     "@discordjs/voice": "^0.7.5",
     "dotenv": "^10.0.0",
+    "pino": "^7.0.0-rc.9",
     "play-dl": "^1.6.9",
     "tweetnacl": "^1.0.3"
   }

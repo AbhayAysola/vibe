@@ -2,6 +2,7 @@ import {
   CommandInteraction,
   Guild,
   GuildMember,
+  MessageEmbed,
   TextBasedChannel,
   VoiceBasedChannel,
 } from "discord.js";
@@ -17,7 +18,14 @@ import {
 import play, { SpotifyTrack } from "play-dl";
 import { URL } from "url";
 
+import logger from "./utils/logger";
+import { Embed } from "@discordjs/builders";
+
 export const queue: Map<string, Contract> = new Map();
+export const errorEmbed: MessageEmbed = new MessageEmbed()
+  .setTitle("Error!")
+  .setDescription("An error has occured.")
+  .setColor("#ff194b");
 
 export const checkVoiceChannel = async (
   interaction: CommandInteraction
@@ -32,8 +40,8 @@ export const checkVoiceChannel = async (
     return false;
   }
   if (!botMember) {
-    await interaction.followUp("An error has occured");
-    console.log("Botmember is equal to: " + botMember);
+    await interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
+    logger.error(new Error("botMember is undefined or null"));
     return false;
   }
 
@@ -57,8 +65,8 @@ export const getSongData = async (
 ): Promise<song | undefined> => {
   const address = interaction.options.getString("url");
   if (!address) {
-    console.log("url option doesn't exist");
-    await interaction.followUp("An error has occured.");
+    logger.error(new Error("url option is undefined or null"));
+    await interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
     return;
   }
   try {
@@ -70,14 +78,14 @@ export const getSongData = async (
       const title = `${data.name} - ${data.artists
         .map((artist) => artist.name)
         .join(", ")}`;
-      console.log("Searching for: " + title);
+      logger.info("Searching for: " + title);
       const searched = await play.search(title, { limit: 1 });
       return {
         title,
         url: searched[0].url,
       };
     } else if (url.hostname === "www.youtube.com") {
-      console.log(url.toString());
+      logger.info("url: " + url.toString());
       const data = await play.video_info(url.toString());
       return {
         title: data.video_details.title || "",
@@ -85,7 +93,7 @@ export const getSongData = async (
       };
     }
   } catch (e) {
-    console.log(e);
+    logger.error(e);
     await interaction.followUp("Please enter a valid url!");
     return;
   }
@@ -103,14 +111,21 @@ interface Contract {
 
 async function playSong(guild: Guild, song: song) {
   const serverQueue = queue.get(guild.id);
-  if (!serverQueue)
-    throw new Error("serverQueue corresponding to guild cannot be found");
+  if (!serverQueue) {
+    logger.error(
+      new Error("serverQueue corresponding to guild cannot be found")
+    );
+    return "";
+  }
 
-  if (!serverQueue.connection)
-    throw new Error("serverQueue.connection is null!");
+  if (!serverQueue.connection) {
+    logger.error(new Error("serverQueue.connection is null!"));
+    return "";
+  }
 
   if (!song) {
     serverQueue.connection.destroy();
+    logger.info("Destroying connection");
     queue.delete(guild.id);
     return "";
   }
@@ -156,7 +171,7 @@ export const addSongToQueue = async (
 
   if (!interaction.channel || !voiceChannel) {
     console.log("No channel to connect to");
-    await interaction.followUp("An error has occured");
+    await interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
     return;
   }
 
@@ -172,7 +187,7 @@ export const addSongToQueue = async (
     };
 
     if (!interaction.guildId) {
-      await interaction.followUp("An error has occured");
+      await interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
       console.log("No guildid");
       return;
     }
@@ -196,7 +211,7 @@ export const addSongToQueue = async (
     } catch (e) {
       console.log(e);
       queue.delete(interaction.guildId);
-      await interaction.followUp("An error has occured");
+      await interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
     }
   } else {
     serverQueue.songs.push(songData);

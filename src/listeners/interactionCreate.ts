@@ -1,5 +1,12 @@
-import { CommandInteraction, Client, Interaction } from "discord.js";
+import {
+  CommandInteraction,
+  Client,
+  Interaction,
+  MessageEmbed,
+} from "discord.js";
+
 import { Commands } from "../Commands";
+import { errorEmbed } from "../Common";
 
 export default (client: Client): void => {
   client.on("interactionCreate", async (interaction: Interaction) => {
@@ -16,7 +23,7 @@ const handleSlashCommand = async (
     (c) => c.data.name === interaction.commandName
   );
   if (!slashCommand) {
-    interaction.reply("An error has occured.");
+    interaction.reply({ embeds: [errorEmbed] });
     return;
   }
   await interaction.deferReply();

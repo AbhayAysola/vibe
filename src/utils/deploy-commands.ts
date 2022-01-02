@@ -13,7 +13,7 @@ const commandFiles = fs
 const rest = new REST({ version: "9" }).setToken(process.env.token || "");
 
 for (const file of commandFiles) {
-  import(`../src/commands/${file}`).then((command) => {
+  import(`../commands/${file}`).then((command) => {
     console.log(command);
     commands.push(command[file.slice(0, -3)].data.toJSON());
     rest

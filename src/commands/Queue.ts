@@ -1,8 +1,22 @@
-import { CommandInteraction, Client } from "discord.js";
-import { SlashCommandBuilder } from "@discordjs/builders";
+import { CommandInteraction, Client, MessageEmbed } from "discord.js";
+import { hyperlink, SlashCommandBuilder, time } from "@discordjs/builders";
 
 import { Command } from "../Command";
-import { queue } from "../Common";
+import { errorEmbed, queue, song } from "../Common";
+
+function formatSongs(client: Client, songs?: song[]): MessageEmbed {
+  const embed = new MessageEmbed().setTitle("Queue");
+  if (songs) {
+    embed.setDescription(
+      songs
+        .map((song, i) => `${i + 1}. ${hyperlink(song.title, song.url)}`)
+        .join("\n")
+    );
+  } else {
+    embed.setDescription("No songs are playing!");
+  }
+  return embed;
+}
 
 export const Queue: Command = {
   data: new SlashCommandBuilder()
@@ -12,15 +26,13 @@ export const Queue: Command = {
     interaction.guildId;
     if (!interaction.guildId) {
       console.log("guildId doesn't exist");
-      interaction.followUp("An error has occured.");
+      interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
       return;
     }
     const serverQueue = queue.get(interaction.guildId);
     const songs = serverQueue?.nowPlaying
       ? serverQueue.songs.concat(serverQueue.nowPlaying)
       : serverQueue?.songs;
-    interaction.followUp(
-      songs?.map((song) => song.title).join(", ") || "No songs are playing"
-    );
+    interaction.followUp({ embeds: [formatSongs(client, songs)] });
   },
 };

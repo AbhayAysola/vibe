@@ -1,8 +1,14 @@
 import { CommandInteraction, Client } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
 
+import logger from "../utils/logger";
 import { Command } from "../Command";
-import { checkVoiceChannel, getSongData, addSongToQueue } from "../Common";
+import {
+  checkVoiceChannel,
+  getSongData,
+  addSongToQueue,
+  errorEmbed,
+} from "../Common";
 
 export const Play: Command = {
   data: new SlashCommandBuilder()
@@ -18,7 +24,8 @@ export const Play: Command = {
     if (await checkVoiceChannel(interaction)) {
       const data = await getSongData(interaction);
       if (!data) {
-        await interaction.followUp("An error has occured.");
+        await interaction.followUp({ embeds: [errorEmbed] });
+        logger.error(new Error("No song data"));
         return;
       }
       await addSongToQueue(data, interaction);
