@@ -33,6 +33,6 @@ export const Queue: Command = {
     const songs = serverQueue?.nowPlaying
       ? serverQueue.songs.concat(serverQueue.nowPlaying)
       : serverQueue?.songs;
-    interaction.followUp({ embeds: [formatSongs(client, songs)] });
+    interaction.followUp({ embeds: [formatSongs(client, songs?.reverse())] });
   },
 };

@@ -18,3 +18,5 @@ ready(client);
 interactionCreate(client);
 
 client.login(token);
+
+// https://discord.com/api/oauth2/authorize?client_id=926462122165166180&permissions=2150631424&scope=bot%20applications.commands
