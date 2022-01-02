@@ -1,5 +1,5 @@
 import { Command } from "./Command";
-import { Ping } from "./commands/Ping";
+import { Queue } from "./commands/Queue";
 import { Play } from "./commands/Play";
 
-export const Commands: Command[] = [Ping, Play];
+export const Commands: Command[] = [Queue, Play];

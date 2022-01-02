@@ -6,6 +6,7 @@ import {
   VoiceBasedChannel,
 } from "discord.js";
 import {
+  AudioPlayerStatus,
   createAudioPlayer,
   createAudioResource,
   DiscordGatewayAdapterCreator,
@@ -46,7 +47,7 @@ export const checkVoiceChannel = async (
   return true;
 };
 
-interface song {
+export interface song {
   title: string;
   url: string;
 }
@@ -66,7 +67,7 @@ export const getSongData = async (
       if (play.is_expired()) await play.refreshToken();
 
       const data = (await play.spotify(url.toString())) as SpotifyTrack;
-      const title = `${data.name} ${data.artists
+      const title = `${data.name} - ${data.artists
         .map((artist) => artist.name)
         .join(", ")}`;
       console.log("Searching for: " + title);
@@ -97,6 +98,7 @@ interface Contract {
   songs: song[];
   volume: number;
   playing: boolean;
+  nowPlaying: song | null;
 }
 
 async function playSong(guild: Guild, song: song) {
@@ -119,7 +121,7 @@ async function playSong(guild: Guild, song: song) {
     inputType: stream.type,
     inlineVolume: true,
   });
-  resource.volume?.setVolume(0.5);
+  resource.volume?.setVolume(serverQueue.volume);
 
   const audioPlayer = createAudioPlayer({
     behaviors: {
@@ -127,8 +129,18 @@ async function playSong(guild: Guild, song: song) {
     },
   });
   audioPlayer.play(resource);
+  serverQueue.playing = true;
+  serverQueue.songs.shift();
+  serverQueue.nowPlaying = song;
 
   serverQueue.connection.subscribe(audioPlayer);
+
+  audioPlayer.on(AudioPlayerStatus.Idle, (oldState, newState) => {
+    if (serverQueue.playing) {
+      playSong(guild, serverQueue.songs[0]);
+    }
+  });
+
   return `Start playing: **${song.title}** - ${song.url}`;
 }
 
@@ -154,8 +166,9 @@ export const addSongToQueue = async (
       voiceChannel,
       connection: null,
       songs: [],
-      volume: 5,
+      volume: 0.5,
       playing: true,
+      nowPlaying: null,
     };
 
     if (!interaction.guildId) {
@@ -187,9 +200,8 @@ export const addSongToQueue = async (
     }
   } else {
     serverQueue.songs.push(songData);
-    console.log(serverQueue.songs);
     await interaction.followUp(
-      `${songData.title} has been added to the queue!`
+      `**${songData.title}** has been added to the queue!`
     );
   }
 };

@@ -14,7 +14,7 @@
   },
   "scripts": {
     "start": "nodemon src/Bot.ts",
-    "deployCommands": "cd utils && ts-node deploy-commands.ts"
+    "deployCommands": "ts-node ./utils/deploy-commands.ts"
   },
   "dependencies": {
     "@discordjs/builders": "^0.11.0",
