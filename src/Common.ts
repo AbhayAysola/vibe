@@ -19,13 +19,18 @@ import play, { SpotifyTrack } from "play-dl";
 import { URL } from "url";
 
 import logger from "./utils/logger";
-import { Embed } from "@discordjs/builders";
+import { hyperlink } from "@discordjs/builders";
+
+export const errorColor = "#ff194b";
+export const defaultColor = "#3dc682";
 
 export const queue: Map<string, Contract> = new Map();
-export const errorEmbed: MessageEmbed = new MessageEmbed()
-  .setTitle("Error!")
-  .setDescription("An error has occured.")
-  .setColor("#ff194b");
+export const errorEmbed = (message?: string): MessageEmbed => {
+  return new MessageEmbed()
+    .setTitle("Error!")
+    .setDescription(message || "An error has occured.")
+    .setColor(errorColor);
+};
 
 export const checkVoiceChannel = async (
   interaction: CommandInteraction
@@ -34,22 +39,30 @@ export const checkVoiceChannel = async (
   const botMember = interaction.guild?.me;
 
   if (!voiceChannel) {
-    await interaction.followUp(
-      "You have to be in a voice channel to use this command!"
-    );
+    await interaction.followUp({
+      embeds: [
+        errorEmbed("You have to be in a voice channel to use this command!"),
+      ],
+      ephemeral: true,
+    });
     return false;
   }
   if (!botMember) {
-    await interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
+    await interaction.followUp({ embeds: [errorEmbed()], ephemeral: true });
     logger.error(new Error("botMember is undefined or null"));
     return false;
   }
 
   const permissions = voiceChannel.permissionsFor(botMember);
   if (!permissions.has("CONNECT") || !permissions.has("SPEAK")) {
-    await interaction.followUp(
-      "I need permissions to join and speak in your voice channel!"
-    );
+    await interaction.followUp({
+      embeds: [
+        errorEmbed(
+          "I need permissions to join and speak in your voice channel!"
+        ),
+      ],
+      ephemeral: true,
+    });
     return false;
   }
   return true;
@@ -66,7 +79,7 @@ export const getSongData = async (
   const address = interaction.options.getString("url");
   if (!address) {
     logger.error(new Error("url option is undefined or null"));
-    await interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
+    await interaction.followUp({ embeds: [errorEmbed()], ephemeral: true });
     return;
   }
   try {
@@ -94,7 +107,10 @@ export const getSongData = async (
     }
   } catch (e) {
     logger.error(e);
-    await interaction.followUp("Please enter a valid url!");
+    await interaction.followUp({
+      embeds: [errorEmbed("Please enter a valid url")],
+      ephemeral: true,
+    });
     return;
   }
 };
@@ -109,25 +125,25 @@ interface Contract {
   nowPlaying: song | null;
 }
 
-async function playSong(guild: Guild, song: song) {
+async function playSong(guild: Guild, song: song): Promise<song | undefined> {
   const serverQueue = queue.get(guild.id);
   if (!serverQueue) {
     logger.error(
       new Error("serverQueue corresponding to guild cannot be found")
     );
-    return "";
+    return;
   }
 
   if (!serverQueue.connection) {
     logger.error(new Error("serverQueue.connection is null!"));
-    return "";
+    return;
   }
 
   if (!song) {
     serverQueue.connection.destroy();
     logger.info("Destroying connection");
     queue.delete(guild.id);
-    return "";
+    return;
   }
 
   let stream = await play.stream(song.url);
@@ -156,7 +172,7 @@ async function playSong(guild: Guild, song: song) {
     }
   });
 
-  return `Start playing: **${song.title}** - ${song.url}`;
+  return song;
 }
 
 export const addSongToQueue = async (
@@ -171,7 +187,10 @@ export const addSongToQueue = async (
 
   if (!interaction.channel || !voiceChannel) {
     console.log("No channel to connect to");
-    await interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
+    await interaction.followUp({
+      embeds: [errorEmbed("You are not connected to a voice channel.")],
+      ephemeral: true,
+    });
     return;
   }
 
@@ -187,7 +206,7 @@ export const addSongToQueue = async (
     };
 
     if (!interaction.guildId) {
-      await interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
+      await interaction.followUp({ embeds: [errorEmbed()], ephemeral: true });
       console.log("No guildid");
       return;
     }
@@ -207,16 +226,31 @@ export const addSongToQueue = async (
         voiceChannel.guild,
         queueContract.songs[0]
       );
-      await interaction.followUp(songMessage);
+      if (songMessage) {
+        const embed = new MessageEmbed()
+          .setTitle("Playing")
+          .setDescription(
+            `Playing **${hyperlink(songMessage.title, songMessage.url)}**`
+          )
+          .setColor(defaultColor);
+        await interaction.followUp({ embeds: [embed] });
+      }
     } catch (e) {
       console.log(e);
       queue.delete(interaction.guildId);
-      await interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
+      await interaction.followUp({ embeds: [errorEmbed()], ephemeral: true });
     }
   } else {
     serverQueue.songs.push(songData);
-    await interaction.followUp(
-      `**${songData.title}** has been added to the queue!`
-    );
+    const embed = new MessageEmbed()
+      .setTitle("Added")
+      .setDescription(
+        `**${hyperlink(
+          songData.title,
+          songData.url
+        )}** has been added to the queue!`
+      )
+      .setColor(defaultColor);
+    await interaction.followUp({ embeds: [embed] });
   }
 };

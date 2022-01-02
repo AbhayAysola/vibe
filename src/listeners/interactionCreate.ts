@@ -23,7 +23,7 @@ const handleSlashCommand = async (
     (c) => c.data.name === interaction.commandName
   );
   if (!slashCommand) {
-    interaction.reply({ embeds: [errorEmbed] });
+    interaction.reply({ embeds: [errorEmbed()], ephemeral: true });
     return;
   }
   await interaction.deferReply();

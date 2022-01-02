@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import { Client, Intents } from "discord.js";
+import { Client, Intents, Presence, PresenceManager } from "discord.js";
 
 import logger from "./utils/logger";
 import ready from "./listeners/ready";

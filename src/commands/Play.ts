@@ -24,7 +24,7 @@ export const Play: Command = {
     if (await checkVoiceChannel(interaction)) {
       const data = await getSongData(interaction);
       if (!data) {
-        await interaction.followUp({ embeds: [errorEmbed] });
+        await interaction.followUp({ embeds: [errorEmbed()], ephemeral: true });
         logger.error(new Error("No song data"));
         return;
       }

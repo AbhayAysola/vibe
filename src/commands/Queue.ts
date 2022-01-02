@@ -2,10 +2,10 @@ import { CommandInteraction, Client, MessageEmbed } from "discord.js";
 import { hyperlink, SlashCommandBuilder, time } from "@discordjs/builders";
 
 import { Command } from "../Command";
-import { errorEmbed, queue, song } from "../Common";
+import { defaultColor, errorEmbed, queue, song } from "../Common";
 
 function formatSongs(client: Client, songs?: song[]): MessageEmbed {
-  const embed = new MessageEmbed().setTitle("Queue");
+  const embed = new MessageEmbed().setTitle("Queue").setColor(defaultColor);
   if (songs) {
     embed.setDescription(
       songs
@@ -26,7 +26,7 @@ export const Queue: Command = {
     interaction.guildId;
     if (!interaction.guildId) {
       console.log("guildId doesn't exist");
-      interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
+      interaction.followUp({ embeds: [errorEmbed()], ephemeral: true });
       return;
     }
     const serverQueue = queue.get(interaction.guildId);
