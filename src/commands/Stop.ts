@@ -1,9 +1,13 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { Client, CommandInteraction, MessageEmbed } from "discord.js";
-import logger from "../utils/logger";
 
 import { Command } from "../Command";
-import { queue, errorEmbed, checkVoiceChannel, defaultColor } from "../Common";
+import {
+  disconnect,
+  errorEmbed,
+  checkVoiceChannel,
+  defaultColor,
+} from "../Common";
 
 export const Stop: Command = {
   data: new SlashCommandBuilder()
@@ -15,26 +19,7 @@ export const Stop: Command = {
       return;
     }
     if (await checkVoiceChannel(interaction)) {
-      const serverQueue = queue.get(interaction.guildId || "");
-      if (!serverQueue) {
-        await interaction.followUp({
-          embeds: [errorEmbed("I am not connected to a voice channel!")],
-          ephemeral: true,
-        });
-        return;
-      }
-      serverQueue?.connection?.destroy();
-      serverQueue?.audioPlayer?.removeAllListeners();
-      logger.info("Destroying connection");
-      queue.delete(interaction.guildId || "");
-      interaction.followUp({
-        embeds: [
-          new MessageEmbed()
-            .setTitle("Disconnected")
-            .setDescription("Bot has cleared the queue.")
-            .setColor(defaultColor),
-        ],
-      });
+      disconnect(interaction);
     }
   },
 };
