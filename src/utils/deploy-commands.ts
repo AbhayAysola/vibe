@@ -18,10 +18,12 @@ for (const file of commandFiles) {
     commands.push(command[file.slice(0, -3)].data.toJSON());
     rest
       .put(
-        Routes.applicationGuildCommands(
-          process.env.client_id || "",
-          process.env.guild_id || ""
-        ),
+        process.env.dev === "true"
+          ? Routes.applicationGuildCommands(
+              process.env.client_id || "",
+              process.env.guild_id || ""
+            )
+          : Routes.applicationCommands(process.env.client_id || ""),
         { body: commands }
       )
       .then(() => console.log("Successfully registered application commands."))
