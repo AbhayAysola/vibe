@@ -208,6 +208,7 @@ async function playSong(guild: Guild, song: song): Promise<song | undefined> {
 
   audioPlayer.on(AudioPlayerStatus.Idle, (oldState, newState) => {
     if (serverQueue.playing) {
+      logger.info("hi");
       playSong(guild, serverQueue.songs[0]);
     }
   });
