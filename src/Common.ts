@@ -131,6 +131,14 @@ interface Contract {
 }
 
 async function playSong(guild: Guild, song: song): Promise<song | undefined> {
+  const serverQueue = queue.get(guild.id);
+  if (!serverQueue) {
+    logger.error(
+      new Error("serverQueue corresponding to guild cannot be found")
+    );
+    return;
+  }
+
   async function destroyConnection() {
     serverQueue?.connection?.destroy();
     serverQueue?.audioPlayer?.removeAllListeners();
@@ -140,14 +148,6 @@ async function playSong(guild: Guild, song: song): Promise<song | undefined> {
 
   if (!song) {
     destroyConnection();
-    return;
-  }
-
-  const serverQueue = queue.get(guild.id);
-  if (!serverQueue) {
-    logger.error(
-      new Error("serverQueue corresponding to guild cannot be found")
-    );
     return;
   }
 
