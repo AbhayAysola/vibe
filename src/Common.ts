@@ -200,7 +200,8 @@ async function playSong(guild: Guild, song: song): Promise<song | undefined> {
         ]);
         // Seems to be reconnecting to a new channel - ignore disconnect
       } catch (error) {
-        destroyConnection();
+        logger.error(e);
+        // destroyConnection();
       }
     }
   );
