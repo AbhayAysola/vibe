@@ -16,6 +16,7 @@ import {
   VoiceConnection,
   VoiceConnectionStatus,
   entersState,
+  AudioPlayer,
 } from "@discordjs/voice";
 import play, { SpotifyTrack } from "play-dl";
 import { URL } from "url";
@@ -125,31 +126,23 @@ interface Contract {
   volume: number;
   playing: boolean;
   nowPlaying: song | null;
+  audioPlayer: AudioPlayer | null;
+  paused: boolean;
 }
 
-export const disconnect = async (interaction: CommandInteraction) => {
-  const serverQueue = queue.get(interaction.guildId || "");
-  if (!serverQueue) {
-    await interaction.followUp({
-      embeds: [errorEmbed("I am not connected to a voice channel!")],
-      ephemeral: true,
-    });
+async function playSong(guild: Guild, song: song): Promise<song | undefined> {
+  async function destroyConnection() {
+    serverQueue?.connection?.destroy();
+    serverQueue?.audioPlayer?.removeAllListeners();
+    logger.info("Destroying connection");
+    queue.delete(guild.id);
+  }
+
+  if (!song) {
+    destroyConnection();
     return;
   }
-  serverQueue?.connection?.destroy();
-  logger.info("Destroying connection");
-  queue.delete(interaction.guildId || "");
-  interaction.followUp({
-    embeds: [
-      new MessageEmbed()
-        .setTitle("Disconnected")
-        .setDescription("Bot has cleared the queue.")
-        .setColor(defaultColor),
-    ],
-  });
-};
 
-async function playSong(guild: Guild, song: song): Promise<song | undefined> {
   const serverQueue = queue.get(guild.id);
   if (!serverQueue) {
     logger.error(
@@ -163,17 +156,6 @@ async function playSong(guild: Guild, song: song): Promise<song | undefined> {
     return;
   }
 
-  async function destroyConnection() {
-    serverQueue?.connection?.destroy();
-    logger.info("Destroying connection");
-    queue.delete(guild.id);
-  }
-
-  if (!song) {
-    destroyConnection();
-    return;
-  }
-
   let stream = await play.stream(song.url);
 
   const resource = createAudioResource(stream.stream, {
@@ -184,13 +166,15 @@ async function playSong(guild: Guild, song: song): Promise<song | undefined> {
 
   const audioPlayer = createAudioPlayer({
     behaviors: {
-      noSubscriber: NoSubscriberBehavior.Pause,
+      noSubscriber: NoSubscriberBehavior.Stop,
     },
   });
   audioPlayer.play(resource);
   serverQueue.playing = true;
   serverQueue.songs.shift();
   serverQueue.nowPlaying = song;
+  serverQueue.paused = false;
+  serverQueue.audioPlayer = audioPlayer;
 
   serverQueue.connection.subscribe(audioPlayer);
 
@@ -257,6 +241,8 @@ export const addSongToQueue = async (
       volume: 0.5,
       playing: true,
       nowPlaying: null,
+      audioPlayer: null,
+      paused: true,
     };
 
     if (!interaction.guildId) {
