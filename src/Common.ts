@@ -14,6 +14,8 @@ import {
   joinVoiceChannel,
   NoSubscriberBehavior,
   VoiceConnection,
+  VoiceConnectionStatus,
+  entersState,
 } from "@discordjs/voice";
 import play, { SpotifyTrack } from "play-dl";
 import { URL } from "url";
@@ -125,6 +127,28 @@ interface Contract {
   nowPlaying: song | null;
 }
 
+export const disconnect = async (interaction: CommandInteraction) => {
+  const serverQueue = queue.get(interaction.guildId || "");
+  if (!serverQueue) {
+    await interaction.followUp({
+      embeds: [errorEmbed("I am not connected to a voice channel!")],
+      ephemeral: true,
+    });
+    return;
+  }
+  serverQueue?.connection?.destroy();
+  logger.info("Destroying connection");
+  queue.delete(interaction.guildId || "");
+  interaction.followUp({
+    embeds: [
+      new MessageEmbed()
+        .setTitle("Disconnected")
+        .setDescription("Bot has cleared the queue.")
+        .setColor(defaultColor),
+    ],
+  });
+};
+
 async function playSong(guild: Guild, song: song): Promise<song | undefined> {
   const serverQueue = queue.get(guild.id);
   if (!serverQueue) {
@@ -139,10 +163,14 @@ async function playSong(guild: Guild, song: song): Promise<song | undefined> {
     return;
   }
 
-  if (!song) {
-    serverQueue.connection.destroy();
+  async function destroyConnection() {
+    serverQueue?.connection?.destroy();
     logger.info("Destroying connection");
     queue.delete(guild.id);
+  }
+
+  if (!song) {
+    destroyConnection();
     return;
   }
 
@@ -165,6 +193,32 @@ async function playSong(guild: Guild, song: song): Promise<song | undefined> {
   serverQueue.nowPlaying = song;
 
   serverQueue.connection.subscribe(audioPlayer);
+
+  serverQueue.connection.on(
+    VoiceConnectionStatus.Disconnected,
+    async (oldState, newState) => {
+      if (!serverQueue.connection) {
+        return;
+      }
+      try {
+        await Promise.race([
+          entersState(
+            serverQueue.connection,
+            VoiceConnectionStatus.Signalling,
+            5_000
+          ),
+          entersState(
+            serverQueue.connection,
+            VoiceConnectionStatus.Connecting,
+            5_000
+          ),
+        ]);
+        // Seems to be reconnecting to a new channel - ignore disconnect
+      } catch (error) {
+        destroyConnection();
+      }
+    }
+  );
 
   audioPlayer.on(AudioPlayerStatus.Idle, (oldState, newState) => {
     if (serverQueue.playing) {

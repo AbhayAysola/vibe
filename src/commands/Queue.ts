@@ -23,7 +23,6 @@ export const Queue: Command = {
     .setName("queue")
     .setDescription("Get currently playing queue information"),
   run: async (client: Client, interaction: CommandInteraction) => {
-    interaction.guildId;
     if (!interaction.guildId) {
       console.log("guildId doesn't exist");
       interaction.followUp({ embeds: [errorEmbed()], ephemeral: true });
