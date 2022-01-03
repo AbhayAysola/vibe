@@ -170,14 +170,14 @@ async function playSong(guild: Guild, song: song): Promise<song | undefined> {
       noSubscriber: NoSubscriberBehavior.Stop,
     },
   });
+  serverQueue.connection.subscribe(audioPlayer);
+
   audioPlayer.play(resource);
   serverQueue.playing = true;
   serverQueue.songs.shift();
   serverQueue.nowPlaying = song;
   serverQueue.paused = false;
   serverQueue.audioPlayer = audioPlayer;
-
-  serverQueue.connection.subscribe(audioPlayer);
 
   serverQueue.connection.on(
     VoiceConnectionStatus.Disconnected,
