@@ -25,7 +25,7 @@ export const Stop: Command = {
       }
       serverQueue?.connection?.destroy();
       serverQueue?.audioPlayer?.removeAllListeners();
-      logger.info("Destroying connection");
+      logger.info("Disconnecting");
       queue.delete(interaction.guildId || "");
       interaction.followUp({
         embeds: [

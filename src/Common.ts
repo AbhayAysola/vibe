@@ -142,6 +142,7 @@ async function playSong(guild: Guild, song: song): Promise<song | undefined> {
   async function destroyConnection() {
     serverQueue?.connection?.destroy();
     serverQueue?.audioPlayer?.removeAllListeners();
+    throw new Error("i");
     logger.info("Destroying connection");
     queue.delete(guild.id);
   }
@@ -199,7 +200,6 @@ async function playSong(guild: Guild, song: song): Promise<song | undefined> {
         ]);
         // Seems to be reconnecting to a new channel - ignore disconnect
       } catch (error) {
-        console.log("fdsfd");
         destroyConnection();
       }
     }
