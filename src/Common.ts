@@ -148,6 +148,7 @@ async function playSong(guild: Guild, song: song): Promise<song | undefined> {
   }
 
   if (!song) {
+    logger.info(serverQueue.songs);
     destroyConnection();
     return;
   }
@@ -201,14 +202,13 @@ async function playSong(guild: Guild, song: song): Promise<song | undefined> {
         // Seems to be reconnecting to a new channel - ignore disconnect
       } catch (error) {
         logger.error(error);
-        // destroyConnection();
+        destroyConnection();
       }
     }
   );
 
   audioPlayer.on(AudioPlayerStatus.Idle, (oldState, newState) => {
     if (serverQueue.playing) {
-      logger.info("hi");
       playSong(guild, serverQueue.songs[0]);
     }
   });
