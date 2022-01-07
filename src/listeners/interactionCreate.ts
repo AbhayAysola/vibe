@@ -6,7 +6,7 @@ import {
 } from "discord.js";
 
 import { Commands } from "../Commands";
-import { errorEmbed } from "../Common";
+import { errorEmbed } from "../common/embeds";
 
 export default (client: Client): void => {
   client.on("interactionCreate", async (interaction: Interaction) => {

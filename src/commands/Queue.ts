@@ -2,7 +2,9 @@ import { CommandInteraction, Client, MessageEmbed } from "discord.js";
 import { hyperlink, SlashCommandBuilder, time } from "@discordjs/builders";
 
 import { Command } from "../Command";
-import { defaultColor, errorEmbed, queue, song } from "../Common";
+import { defaultColor, errorEmbed } from "../common/embeds";
+import queue from "../common/queue";
+import song from "../common/song";
 
 function formatSongs(client: Client, songs?: song[]): MessageEmbed {
   const embed = new MessageEmbed().setTitle("Queue").setColor(defaultColor);
