@@ -16,7 +16,13 @@ export const Stop: Command = {
       interaction.followUp({ embeds: [errorEmbed()], ephemeral: true });
       return;
     }
-    if (await checkVoiceChannel(interaction)) {
+    const errorMessage = await checkVoiceChannel(interaction);
+    if (errorMessage) {
+      await interaction.followUp({
+        embeds: [errorEmbed(errorMessage)],
+        ephemeral: true,
+      });
+    } else {
       const serverQueue = queue.get(interaction.guildId || "");
       if (!serverQueue) {
         await interaction.followUp({
