@@ -1,7 +1,9 @@
 import { CommandInteraction, GuildMember } from "discord.js";
 import {
+  createAudioPlayer,
   DiscordGatewayAdapterCreator,
   joinVoiceChannel,
+  NoSubscriberBehavior,
 } from "@discordjs/voice";
 
 import song from "./song";
@@ -38,6 +40,11 @@ export default async (
         volume: 0.5,
         playing: false,
         nowPlaying: null,
+        audioPlayer: createAudioPlayer({
+          behaviors: {
+            noSubscriber: NoSubscriberBehavior.Pause,
+          },
+        }),
       };
       queueContract.songs.push(song);
       queue.set(guildId, queueContract);
@@ -54,5 +61,4 @@ export default async (
     serverQueue.songs.push(song);
     return;
   }
-  return;
 };

@@ -1,9 +1,4 @@
-import {
-  AudioPlayerStatus,
-  createAudioPlayer,
-  createAudioResource,
-  NoSubscriberBehavior,
-} from "@discordjs/voice";
+import { AudioPlayerStatus, createAudioResource } from "@discordjs/voice";
 import play from "play-dl";
 import logger from "../utils/logger";
 import queue from "./queue";
@@ -31,20 +26,14 @@ const playSong = async (
     inlineVolume: true,
   });
   resource.volume?.setVolume(1);
-
-  const audioPlayer = createAudioPlayer({
-    behaviors: {
-      noSubscriber: NoSubscriberBehavior.Pause,
-    },
-  });
-  audioPlayer.play(resource);
+  serverQueue.audioPlayer.play(resource);
   serverQueue.playing = true;
   serverQueue.nowPlaying = song;
   serverQueue.songs.shift();
 
-  serverQueue.connection.subscribe(audioPlayer);
+  serverQueue.connection.subscribe(serverQueue.audioPlayer);
 
-  audioPlayer.on(AudioPlayerStatus.Idle, () => {
+  serverQueue.audioPlayer.on(AudioPlayerStatus.Idle, () => {
     if (serverQueue.playing) {
       playSong(guildId, serverQueue.songs[0]);
     }
