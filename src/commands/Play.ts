@@ -26,7 +26,7 @@ export const Play: Command = {
         ephemeral: true,
       });
     } else {
-      const input = interaction.options.getString("url");
+      const input = interaction.options.getString("name");
       if (!input) {
         logger.error(new Error("option is undefined or null"));
         await interaction.followUp({ embeds: [errorEmbed()], ephemeral: true });

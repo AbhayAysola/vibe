@@ -5,6 +5,7 @@ import { Command } from "../Command";
 import { defaultColor, errorEmbed } from "../common/embeds";
 import queue from "../common/queue";
 import song from "../common/song";
+import logger from "../utils/logger";
 
 function formatSongs(client: Client, songs?: song[]): MessageEmbed {
   const embed = new MessageEmbed().setTitle("Queue").setColor(defaultColor);
@@ -32,8 +33,8 @@ export const Queue: Command = {
     }
     const serverQueue = queue.get(interaction.guildId);
     const songs = serverQueue?.nowPlaying
-      ? serverQueue.songs.concat(serverQueue.nowPlaying)
+      ? [serverQueue?.nowPlaying].concat(serverQueue.songs)
       : serverQueue?.songs;
-    interaction.followUp({ embeds: [formatSongs(client, songs?.reverse())] });
+    interaction.followUp({ embeds: [formatSongs(client, songs)] });
   },
 };
