@@ -11,11 +11,11 @@ import addSongToQueue from "../common/addSongToQueue";
 export const Play: Command = {
   data: new SlashCommandBuilder()
     .setName("play")
-    .setDescription("Plays song of the url in connected voice channel.")
+    .setDescription("Plays song in the connected voice channel.")
     .addStringOption((option) =>
       option
-        .setName("url")
-        .setDescription("url of the song to be played")
+        .setName("name")
+        .setDescription("Name of the song to be played")
         .setRequired(true)
     ),
   run: async (client: Client, interaction: CommandInteraction) => {
@@ -26,16 +26,19 @@ export const Play: Command = {
         ephemeral: true,
       });
     } else {
-      const address = interaction.options.getString("url");
-      if (!address) {
-        logger.error(new Error("url option is undefined or null"));
+      const input = interaction.options.getString("url");
+      if (!input) {
+        logger.error(new Error("option is undefined or null"));
         await interaction.followUp({ embeds: [errorEmbed()], ephemeral: true });
         return;
       }
-      const data = await getSongData(address);
+      const data = await getSongData(input);
       if (!data) {
-        await interaction.followUp({ embeds: [errorEmbed()], ephemeral: true });
-        logger.error(new Error("Invalid url!"));
+        await interaction.followUp({
+          embeds: [errorEmbed("Invalid input")],
+          ephemeral: true,
+        });
+        logger.error(new Error("Invalid input!"));
         return;
       }
       logger.info(data);
