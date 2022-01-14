@@ -10,6 +10,7 @@ import song from "./song";
 import queue from "./queue";
 import Contract from "./contract";
 import playSong from "./playSong";
+import logger from "../utils/logger";
 
 export default async (
   song: song,
@@ -59,6 +60,11 @@ export default async (
     }
   } else {
     serverQueue.songs.push(song);
+    if (!serverQueue.playing) {
+      const songMessage = await playSong(guildId, serverQueue.songs[0]);
+      if (!songMessage) return;
+      else return songMessage;
+    }
     return;
   }
 };

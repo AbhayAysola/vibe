@@ -53,7 +53,8 @@ export const Play: Command = {
               .setDescription(
                 `Added ${hyperlink(data.title, data.url)} to the queue`
               )
-              .setColor(defaultColor),
+              .setColor(defaultColor)
+              .setThumbnail(data.thumbnail),
           ],
         });
       }

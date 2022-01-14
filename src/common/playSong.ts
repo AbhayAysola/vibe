@@ -1,8 +1,12 @@
 import { AudioPlayerStatus, createAudioResource } from "@discordjs/voice";
+import { MessageEmbed } from "discord.js";
 import play from "play-dl";
 import logger from "../utils/logger";
+import { defaultColor } from "./embeds";
 import queue from "./queue";
 import song from "./song";
+
+let timeoutId: NodeJS.Timeout;
 
 const playSong = async (
   guildId: string,
@@ -14,10 +18,27 @@ const playSong = async (
   }
 
   if (!song) {
-    serverQueue.connection.destroy();
-    logger.info("Destroying connection");
-    queue.delete(guildId);
+    serverQueue.playing = false;
+    serverQueue.nowPlaying = null;
+    timeoutId = setTimeout(() => {
+      logger.info("Destroying connection");
+      serverQueue.textChannel.send({
+        embeds: [
+          new MessageEmbed()
+            .setTitle("Disconnecting")
+            .setDescription(
+              "The bot has in inactive for 5 minutes, so it is leaving the voice channel"
+            )
+            .setColor(defaultColor),
+        ],
+      });
+      serverQueue.connection.destroy();
+      queue.delete(guildId);
+    }, 300 * 1000);
+    return;
   }
+
+  clearTimeout(timeoutId);
 
   const stream = await play.stream(song.url);
 

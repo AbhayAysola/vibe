@@ -2,7 +2,7 @@ import { CommandInteraction, Client, MessageEmbed } from "discord.js";
 import { hyperlink, SlashCommandBuilder } from "@discordjs/builders";
 
 import { Command } from "../Command";
-import { errorEmbed } from "../common/embeds";
+import { defaultColor, errorEmbed } from "../common/embeds";
 import queue from "../common/queue";
 import playSong from "../common/playSong";
 
@@ -44,7 +44,8 @@ export const Skip: Command = {
               serverQueue.nowPlaying?.title || "",
               serverQueue.nowPlaying?.url || ""
             )}`
-          ),
+          )
+          .setColor(defaultColor),
       ],
     });
   },

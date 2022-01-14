@@ -1,5 +1,5 @@
 import { CommandInteraction } from "discord.js";
-import play, { SpotifyTrack } from "play-dl";
+import play, { SpotifyTrack, YouTubeVideo } from "play-dl";
 
 import song from "./song";
 import logger from "../utils/logger";
@@ -33,6 +33,7 @@ async function getSongDataFromYoutubeUrl(
     return {
       title: data.video_details.title || "no title",
       url: data.video_details.url,
+      thumbnail: data.video_details.thumbnails[0].url,
     };
   }
 }
@@ -40,10 +41,29 @@ async function getSongDataFromYoutubeUrl(
 async function getSongDataFromSearchTerm(
   term: string
 ): Promise<song | undefined> {
-  const data = await play.search(term + " audio", { limit: 1 });
+  const data = await play.search(term + " original audio", {
+    limit: 1,
+    source: { youtube: "video" },
+  });
   logger.info("Searching for: " + term + " audio");
+  if (!data) return;
+
+  const thumbnail = await getSongThumbnailFromSpotify(term);
+  if (!thumbnail) return;
+
   return {
     title: data[0].title || term,
     url: data[0].url,
+    thumbnail: thumbnail,
   };
+}
+
+async function getSongThumbnailFromSpotify(
+  term: string
+): Promise<string | undefined> {
+  const sp_data = await play.search(term, {
+    source: { spotify: "track" },
+    limit: 1,
+  });
+  return sp_data[0].thumbnail?.url;
 }
